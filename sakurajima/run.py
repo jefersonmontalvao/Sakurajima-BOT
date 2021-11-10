@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from sakurajima.core import run_bot
+import sakurajima
 
 if __name__ == '__main__':
-    run_bot()
+    sakurajima.core.run_bot()

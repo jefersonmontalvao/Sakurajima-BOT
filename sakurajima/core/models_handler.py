@@ -11,13 +11,11 @@ class ModelsHandler:
         # Define few variables.
         self.backend = None
 
-        # Set the backend module.
+        # Set the database backend module.
         self.set_db_backend()
 
         # Set the values of schema_data property.
         self.import_models()
-
-        print(self.schema_data)
 
     @property
     def schema_data(self):
@@ -25,10 +23,10 @@ class ModelsHandler:
         Property get of data of data.
         """
         try:
-            value = getattr(self.__class__, '_meta_data')
+            value = getattr(self.__class__, '__schema_data')
         except AttributeError:
-            setattr(self.__class__, '_meta_data', [])
-            value = getattr(self.__class__, '_meta_class')
+            setattr(self.__class__, '__schema_data', [])
+            value = getattr(self.__class__, '__schema_data')
         return value
 
     @schema_data.setter
@@ -37,7 +35,7 @@ class ModelsHandler:
         Property set of data of data.
         """
         if isinstance(value, (list, tuple)):
-            setattr(self.__class__, '_meta_data', tuple(value))
+            setattr(self.__class__, '__schema_data', tuple(value))
 
     def set_db_backend(self):
         """

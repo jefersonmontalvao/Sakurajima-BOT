@@ -1,5 +1,3 @@
-import sakurajima.db.backends
-
 from .botcore import Sakurajima, run_bot
 from .logger import get_logger
 from .models_handler import ModelsHandler

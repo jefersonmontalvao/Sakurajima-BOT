@@ -11,7 +11,7 @@ class Model:
                 object_fields.append({_k: cls.__dict__.get(_k)})
 
         meta_data = {
-            'NAME': object_name,
+            'NAME': object_name.lower(),
             'FIELDS': tuple(object_fields)
         }
 
@@ -19,36 +19,59 @@ class Model:
 
 
 class Field:
-    def __init__(self, field_name, default, is_nullable, autoincrement):
-        self.humanized_name = field_name
+    def __init__(self, default, is_nullable, autoincrement, primary_key, unique):
         self.default = default
-        self.__meta_data = None
+        self.is_nullable = is_nullable
+        self.autoincrement = autoincrement
+        self.primary_key = primary_key
+        self.unique = unique
+
+    @classmethod
+    def this_class(cls):
+        return cls
 
     @property
-    def meta_data(self) -> tuple:
-        if self.__meta_data is not None:
-            return self.__meta_data
-        else:
-            raise AttributeError('field Undefined.')
+    def field_creation_template(self):
+        template_parts = [
+            '%(field_name)s',
+            f'%({self.__class__.__name__})s',
+        ]
+        if self.primary_key and not self.unique:
+            part = 'PRIMARY KEY'
+            template_parts.append(part)
+        elif self.unique and not self.primary_key:
+            part = 'UNIQUE'
+            template_parts.append(part)
 
-    @meta_data.setter
-    def meta_data(self, value):
-        if isinstance(value, (list, tuple)):
-            if isinstance(value, tuple):
-                self.__meta_data = value
-            else:
-                self.__meta_data = tuple(value)
+        if self.autoincrement and self.primary_key:
+            part = 'AUTOINCREMENT'
+            template_parts.append(part)
+        elif self.autoincrement and not primary_key:
+            raise AttributeError("can not set autoincrement if field is not a primary key")
+
+        if not self.is_nullable and self.default is None:
+            part = 'NOT NULL'
+            template_parts.append(part)
+        elif not self.is_nullable and self.default is not None:
+            part = 'DEFAULT {}'.format(self.default)
+            template_parts.append(part)
+        elif self.is_nullable and self.default is None:
+            part = 'DEFAULT NULL'
+            template_parts.append(part)
         else:
-            params = {'type': type(value)}
-            raise ValueError('value type %(type)s is invalid.\n\
-                              value must to be a list or tuple.' % params)
+            raise AttributeError('error when setting a default value or setting a null value in your model field')
+
+        template = ' '.join([part for part in template_parts])
+
+        return template
 
 
 # Numeric
 class IntegerField(Field):
-    def __init__(self, field_name=None, default='__non_use_default__', is_nullable=False, autoincrement=False):
-        super(IntegerField, self).__init__(field_name=field_name, default=default, is_nullable=is_nullable,
-                                           autoincrement=autoincrement)
+    def __init__(self, default=None, is_nullable=False, autoincrement=False,
+                 primary_key=False, unique=False):
+        super(IntegerField, self).__init__(default=default, is_nullable=is_nullable, autoincrement=autoincrement,
+                                           primary_key=primary_key, unique=unique)
 
     def __str__(self):
         return self.__class__.__name__

@@ -10,6 +10,10 @@ class SchemaAdmin(BaseSchemaAdmin):
         super(SchemaAdmin, self).__init__(sqlite3.connect)
         self.__connection = None
 
+        self.__class__.data_types = {
+            'IntegerField': 'INTEGER'
+        }
+
     @property
     def connection(self) -> any:
         """
@@ -61,9 +65,29 @@ class SchemaAdmin(BaseSchemaAdmin):
         Delete some table.
         """
         template = self.schema_templates['drop_table'] % kwargs
-        kwargs.get('connection').cursor().execute(template)
-        kwargs.get('connection').commit()
+        self.connection.cursor().execute(template)
+        self.connection.commit()
         self.get_disconnect()
 
     def alter_table(self, **kwargs) -> None:
         pass
+
+    def show_tables(self) -> list:
+        # Execute SQL.
+        args = {
+            'columns': 'name',
+            'table': 'sqlite_master',
+            'condition': "type='table'"
+        }
+        template = self.operation_templates['select'] % args
+
+        # Get the query.
+        cursor_query = self.connection.cursor().execute(template)
+        rows = cursor_query.fetchall()
+        self.get_disconnect()
+
+        # Return value
+        tables_tuple = tuple([table[0] for table in rows])
+        return tables_tuple
+
+

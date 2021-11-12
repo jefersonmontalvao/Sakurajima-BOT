@@ -13,7 +13,11 @@ class BaseSchemaAdmin:
         'update': 'UPDATE TABLE %(name)s',
         'insert': 'INSERT INTO %(table)s (%(columns)s) VALUES (%(values)s)',
         'delete': 'DELETE FROM TABLE %(name)s WHERE %(condition)s',
-        'truncate': 'TRUNCATE TABLE %(name)s'
+        'truncate': 'TRUNCATE TABLE %(name)s',
+        'select': 'SELECT %(columns)s FROM %(table)s WHERE %(condition)s'
+    }
+    data_types = {
+
     }
 
     def __init__(self, connector) -> None:
@@ -51,4 +55,7 @@ class BaseSchemaAdmin:
         pass
 
     def alter_table(self, kwargs) -> None:
+        pass
+
+    def show_tables(self) -> tuple:
         pass
